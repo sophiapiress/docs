@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visualizador de Documentação</title>
+  <link rel="stylesheet" href="visustyless.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/showdown/dist/showdown.min.js"></script>
+</head>
+<body>
+  <header>
+  <div class="titulo-logo">
+    <h1>Visualizador de Documentação</h1>
+    <div class="bloco-logo">
+      <img src="logo2.png" class="logo-claro" alt="Logo Claro">
+      <img src="logo.png" class="logo-escuro" alt="Logo Escuro">
+    </div>
+  </div>
+  <p id="caminho-doc"></p>
+</header>
+
+  <main>
+    <aside id="sidebar">
+      <h3>Tópicos</h3>
+      <ul id="toc"></ul>
+    </aside>
+
+    <section id="conteudo" class="indice">
+      <p>Carregando conteúdo...</p>
+    </section>
+
+    <aside id="config-aparencia">
+      <div class="config-header" onclick="toggleConfig()">
+        <h3>Aparência</h3>
+        <span id="icone-aparencia">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.2-5-5s2.2-5 
+                     5-5 5 2.2 5 5-2.2 5-5 5zm0-8.2c-1.8 0-3.2 1.4-3.2 3.2s1.4 3.2 
+                     3.2 3.2 3.2-1.4 3.2-3.2-1.4-3.2-3.2-3.2z"/>
+          </svg>
+        </span>
+      </div>
+
+      <div id="config-opcoes">
+        <div class="grupo-opcao">
+          <strong>Texto</strong>
+          <label><input type="radio" name="tamanho-texto" value="pequeno" checked> Pequeno</label>
+          <label><input type="radio" name="tamanho-texto" value="padrao"> Padrão</label>
+          <label><input type="radio" name="tamanho-texto" value="grande"> Grande</label>
+        </div>
+        <div class="grupo-opcao" style="margin-top:15px;">
+          <strong>Largura</strong>
+          <label><input type="radio" name="largura" value="padrao"> Padrão</label>
+          <label><input type="radio" name="largura" value="largo" checked> Largo</label>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    &copy; 2025 Documentação Big2Be™ — Todos os direitos reservados
+  </footer>
+
+  <button id="voltar-topo" title="Voltar ao topo">↑</button>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const docPath = params.get("doc");
+    const $conteudo = document.getElementById("conteudo");
+    const $caminho = document.getElementById("caminho-doc");
+    const $toc = document.getElementById("toc");
+
+    if (!docPath) {
+      $conteudo.innerHTML = "<p>❌ Nenhum documento selecionado. Use ?doc=caminho.md</p>";
+    } else {
+      $caminho.textContent = `Documento: ${docPath}`;
+      fetch(docPath)
+        .then(res => {
+          if (!res.ok) throw new Error("Arquivo não encontrado");
+          return res.text();
+        })
+        .then(markdown => {
+          const converter = new showdown.Converter({ tables: true });
+          const html = converter.makeHtml(markdown);
+          $conteudo.innerHTML = html;
+
+          const headers = [...$conteudo.querySelectorAll("h1, h2, h3, h4, h5, h6")].map(h => {
+            const level = parseInt(h.tagName[1]);
+            const id = h.textContent.trim().toLowerCase().replace(/[^\w]+/g, '-');
+            h.id = id;
+            return { element: h, level, id, text: h.textContent };
+          });
+
+          const root = { children: [] };
+          const stack = [{ level: 0, node: root }];
+
+          headers.forEach(header => {
+            const li = document.createElement("li");
+            const a = document.createElement("a");
+            a.href = `#${header.id}`;
+            a.textContent = header.text;
+            li.appendChild(a);
+
+            while (stack.length > 0 && header.level <= stack[stack.length - 1].level) {
+              stack.pop();
+            }
+
+            const parentNode = stack[stack.length - 1].node;
+            if (!parentNode.ul) {
+              parentNode.ul = document.createElement("ul");
+              if (parentNode !== root) {
+                parentNode.li.appendChild(parentNode.ul);
+              } else {
+                $toc.appendChild(parentNode.ul);
+              }
+            }
+
+            parentNode.ul.appendChild(li);
+            stack.push({ level: header.level, node: { li, ul: null } });
+          });
+        })
+        .catch(err => {
+          $conteudo.innerHTML = `<p style="color:red;">Erro: ${err.message}</p>`;
+        });
+
+      const btnTopo = document.getElementById("voltar-topo");
+      window.onscroll = function () {
+        btnTopo.style.display = document.documentElement.scrollTop > 300 ? "block" : "none";
+      };
+      btnTopo.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Menu de Aparência
+    const body = document.body;
+    document.querySelectorAll('input[name="tamanho-texto"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        body.classList.remove('texto-pequeno', 'texto-padrao', 'texto-grande');
+        body.classList.add(`texto-${radio.value}`);
+      });
+    });
+    document.querySelectorAll('input[name="largura"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        body.classList.remove('largura-padrao', 'largura-largo');
+        body.classList.add(`largura-${radio.value}`);
+      });
+    });
+    body.classList.add('texto-pequeno', 'largura-largo');
+
+    // Expand/Colapsar Aparência
+    function toggleConfig() {
+      const opcoes = document.getElementById("config-opcoes");
+      const icone = document.getElementById("icone-aparencia");
+
+      opcoes.classList.toggle("hide");
+
+      if (opcoes.classList.contains("hide")) {
+        icone.style.transform = "rotate(90deg)";
+      } else {
+        icone.style.transform = "rotate(0deg)";
+      }
+    }
+  </script>
+</body>
+</html>
