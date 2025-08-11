@@ -19,6 +19,10 @@
     </div>
     <p id="caminho-doc"></p>
   </header>
+<div id="modal-imagem" class="modal hide">
+  <span class="fechar" onclick="fecharModal()">&times;</span>
+  <img id="imagem-modal" src="" alt="Imagem ampliada" />
+</div>
 
   <main>
     <aside id="sidebar">
@@ -140,6 +144,35 @@
       };
       btnTopo.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+// Modal de imagem
+document.addEventListener("click", function (e) {
+  if (e.target.tagName === "IMG" && e.target.closest("#conteudo")) {
+    const src = e.target.getAttribute("src");
+    const modal = document.getElementById("modal-imagem");
+    const modalImg = document.getElementById("imagem-modal");
+
+    modalImg.src = src;
+    modal.classList.remove("hide");
+  }
+});
+
+function fecharModal() {
+  document.getElementById("modal-imagem").classList.add("hide");
+}
+
+// Tecla ESC fecha o modal
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") {
+    fecharModal();
+  }
+});
+
+// Clicar fora da imagem fecha também
+document.getElementById("modal-imagem").addEventListener("click", function (e) {
+  if (e.target === this) {
+    fecharModal();
+  }
+});
 
     // Menu de Aparência
     const body = document.body;
@@ -173,3 +206,4 @@
   </script>
 </body>
 </html>
+
