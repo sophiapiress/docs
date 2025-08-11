@@ -10,15 +10,15 @@
 </head>
 <body>
   <header>
-  <div class="titulo-logo">
-    <h1>Visualizador de Documentação</h1>
-    <div class="bloco-logo">
-      <img src="logo2.png" class="logo-claro" alt="Logo Claro">
-      <img src="logo.png" class="logo-escuro" alt="Logo Escuro">
+    <div class="titulo-logo">
+      <h1>Visualizador de Documentação</h1>
+      <div class="bloco-logo">
+        <img src="logo2.png" class="logo-claro" alt="Logo Claro">
+        <img src="logo.png" class="logo-escuro" alt="Logo Escuro">
+      </div>
     </div>
-  </div>
-  <p id="caminho-doc"></p>
-</header>
+    <p id="caminho-doc"></p>
+  </header>
 
   <main>
     <aside id="sidebar">
@@ -36,8 +36,8 @@
         <span id="icone-aparencia">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.2-5-5s2.2-5 
-                     5-5 5 2.2 5 5-2.2 5-5 5zm0-8.2c-1.8 0-3.2 1.4-3.2 3.2s1.4 3.2 
-                     3.2 3.2 3.2-1.4 3.2-3.2-1.4-3.2-3.2-3.2z"/>
+                    5-5 5 2.2 5 5-2.2 5-5 5zm0-8.2c-1.8 0-3.2 1.4-3.2 3.2s1.4 3.2 
+                    3.2 3.2 3.2-1.4 3.2-3.2-1.4-3.2-3.2-3.2z"/>
           </svg>
         </span>
       </div>
@@ -85,6 +85,16 @@
           const html = converter.makeHtml(markdown);
           $conteudo.innerHTML = html;
 
+          // 🔹 Ajusta caminhos relativos das imagens para funcionarem no visualizador
+          const basePath = docPath.substring(0, docPath.lastIndexOf('/') + 1);
+          $conteudo.querySelectorAll('img').forEach(img => {
+            const src = img.getAttribute('src');
+            if (src && !/^https?:\/\//.test(src)) {
+              img.src = basePath + src;
+            }
+          });
+
+          // Geração da tabela de conteúdos
           const headers = [...$conteudo.querySelectorAll("h1, h2, h3, h4, h5, h6")].map(h => {
             const level = parseInt(h.tagName[1]);
             const id = h.textContent.trim().toLowerCase().replace(/[^\w]+/g, '-');
