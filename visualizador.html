@@ -98,7 +98,7 @@
             }
           });
 
-          // Geração da tabela de conteúdos
+          // conteudo
           const headers = [...$conteudo.querySelectorAll("h1, h2, h3, h4, h5, h6")].map(h => {
             const level = parseInt(h.tagName[1]);
             const id = h.textContent.trim().toLowerCase().replace(/[^\w]+/g, '-');
@@ -160,21 +160,21 @@ function fecharModal() {
   document.getElementById("modal-imagem").classList.add("hide");
 }
 
-// Tecla ESC fecha o modal
+// fechar imagem
 document.addEventListener("keydown", function (e) {
   if (e.key === "Escape") {
     fecharModal();
   }
 });
 
-// Clicar fora da imagem fecha também
+// clicar fora e fechar
 document.getElementById("modal-imagem").addEventListener("click", function (e) {
   if (e.target === this) {
     fecharModal();
   }
 });
 
-    // Menu de Aparência
+    // menu
     const body = document.body;
     document.querySelectorAll('input[name="tamanho-texto"]').forEach(radio => {
       radio.addEventListener('change', () => {
@@ -190,7 +190,7 @@ document.getElementById("modal-imagem").addEventListener("click", function (e) {
     });
     body.classList.add('texto-pequeno', 'largura-largo');
 
-    // Expand/Colapsar Aparência
+    
     function toggleConfig() {
       const opcoes = document.getElementById("config-opcoes");
       const icone = document.getElementById("icone-aparencia");
@@ -206,4 +206,5 @@ document.getElementById("modal-imagem").addEventListener("click", function (e) {
   </script>
 </body>
 </html>
+
 
